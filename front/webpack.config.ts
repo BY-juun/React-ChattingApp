@@ -39,7 +39,7 @@ const config: Configuration = {
             [
               '@babel/preset-env',
               {
-                targets: { browsers: ['IE 10'] },
+                targets: { browsers: ['IE 10','last 2 chrome versions'] },
                 debug: isDevelopment,
               },
             ],
@@ -86,7 +86,7 @@ if (isDevelopment && config.plugins) {
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
   config.plugins.push(new ReactRefreshWebpackPlugin({
     overlay: {
-      useURLPolyfill: true
+      //useURLPolyfill: true
     }
   }));
 }
