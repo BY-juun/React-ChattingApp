@@ -9,7 +9,7 @@ const SignUp = loadable(()=>import('@pages/SignUp'));
 const App : FC = () => {
     return (
         <Switch>
-            <Redirect exact path='/' to = '/login'/>
+            <Redirect exact path='/' to = '/signup'/>
             <Route path='/login' component = {LogIn}/>
             <Route path='/signup' component = {SignUp}/>
         </Switch>
