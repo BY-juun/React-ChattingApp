@@ -1,10 +1,10 @@
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import React, { FC, useCallback, useState } from 'react';
+import React, { useCallback, useState, VFC } from 'react';
 import { Switch, Route, Redirect, Link } from 'react-router-dom';
 import loadable from '@loadable/component';
 import useSWR from 'swr';
-import {toast} from 'react-toastify';
+import { toast } from 'react-toastify';
 import { IUser } from '@typings/db';
 import {
   AddButton,
@@ -17,6 +17,7 @@ import {
   ProfileModal,
   RightMenu,
   WorkspaceButton,
+  WorkspaceModal,
   WorkspaceName,
   Workspaces,
   WorkspaceWrapper,
@@ -24,16 +25,19 @@ import {
 import gravatar from 'gravatar';
 import Menu from '@components/Menu';
 import Modal from '@components/Modal';
-import { Button, Input, Label } from '@pages/SignUp/styles';
+import Modalform from '@components/Modalform';
 import useInput from '@hooks/useInput';
+import CreateChannelModal from '@components/CreateChannelModal';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
-const Workspace: FC = () => {
+const Workspace: VFC = () => {
   const { data: userData, error, mutate } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
   const onLogOut = useCallback(() => {
@@ -61,32 +65,52 @@ const Workspace: FC = () => {
 
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
     setNewWorkspace('');
     setNewUrl('');
   }, []);
 
-  const onCreateWorkspace = useCallback((e) => {
-    e.preventDefault();
-    if (!newWorkspace || !newWorkspace.trim()) return;
-    if (!newUrl || !newUrl.trim()) return;
-    axios
-      .post('http://localhost:3095/api/workspaces', {
-        workspace: newWorkspace,
-        url: newUrl,
-      },{
-        withCredentials : true,
-      })
-      .then(() => {
-        mutate();
-        setShowCreateWorkspaceModal(false);
-        setNewWorkspace('');
-        setNewUrl('');
-      })
-      .catch((err)=>{
-        console.error(err);
-        toast.error(err.response?.data, {position : 'bottom-center'});
-      })
-  }, [newWorkspace,newUrl]);
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
+  }, []);
+
+  const onCloseWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal(false);
+  }, []);
+
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal(true);
+  }, []);
+
+  const onCreateWorkspace = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!newWorkspace || !newWorkspace.trim()) return;
+      if (!newUrl || !newUrl.trim()) return;
+      axios
+        .post(
+          'http://localhost:3095/api/workspaces',
+          {
+            workspace: newWorkspace,
+            url: newUrl,
+          },
+          {
+            withCredentials: true,
+          },
+        )
+        .then(() => {
+          mutate();
+          setShowCreateWorkspaceModal(false);
+          setNewWorkspace('');
+          setNewUrl('');
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error(err.response?.data, { position: 'bottom-center' });
+        });
+    },
+    [newWorkspace, newUrl],
+  );
 
   if (!userData) {
     return <Redirect to="/login" />;
@@ -125,8 +149,18 @@ const Workspace: FC = () => {
           <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>Sleact</WorkspaceName>
-          <MenuScroll>menu scroll</MenuScroll>
+          <WorkspaceName onClick={toggleWorkspaceModal}>Sleact</WorkspaceName>
+          <MenuScroll>
+            {showWorkspaceModal && (
+              <Menu show={showWorkspaceModal} onCloseModal={onCloseWorkspaceModal} style={{ top: 95, left: 80 }}>
+                <WorkspaceModal>
+                  <h2>Sleact</h2>
+                  <button onClick={onClickAddChannel}>채널 만들기</button>
+                  <button onClick={onLogOut}>로그아웃</button>
+                </WorkspaceModal>
+              </Menu>
+            )}
+          </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
@@ -136,17 +170,18 @@ const Workspace: FC = () => {
         </Chats>
       </WorkspaceWrapper>
       <Modal show={showCreateWorkspaceModal} onCloseModal={onCloseModal}>
-        <form onSubmit={onCreateWorkspace}>
-          <Label id="workspace-label">
-            <span>워크스페이스 이름</span>
-            <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkspace}></Input>
-          </Label>
-          <Label id="workspace-url-label">
-            <span>워크스페이스 url</span>
-            <Input id="workspace" value={newUrl} onChange={onChangeNewUrl}></Input>
-          </Label>
-          <Button type="submit">생성하기</Button>
-        </form>
+        <Modalform
+          onCreateWorkspace={onCreateWorkspace}
+          onChangeNewWorkspace={onChangeNewWorkspace}
+          onChangeNewUrl={onChangeNewUrl}
+          newWorkspace={newWorkspace}
+          newUrl={newUrl}
+        ></Modalform>
+        <CreateChannelModal
+          show={showCreateChannelModal}
+          onCloseModal={onCloseModal}
+          setShowCreateChannelModal={setShowCreateChannelModal}
+        ></CreateChannelModal>
       </Modal>
     </div>
   );
