@@ -6,7 +6,7 @@ import { Link, Redirect } from 'react-router-dom';
 import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 const SignUp = () => {
-  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data, error, mutate } = useSWR('/api/users', fetcher);
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, setPassword] = useState('');

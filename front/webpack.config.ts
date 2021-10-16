@@ -82,12 +82,13 @@ const config: Configuration = {
     port: 3090,
     devMiddleware: { publicPath: '/dist/' },
     static: { directory: path.resolve(__dirname) },
-     proxy : { // /api로 보내는 요청은 3095가 보내는 것처럼 속여줌.
-       '/api/' : {
-         target : "http://localhost:3095",
-         changeOrigin : true,
-      }
-    }
+    proxy: {
+      '/api/': {
+        target: 'http://localhost:3095',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
 };
 
@@ -95,7 +96,7 @@ if (isDevelopment && config.plugins) {
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
   config.plugins.push(new ReactRefreshWebpackPlugin({
     overlay: {
-      //useURLPolyfill: true
+      useURLPolyfill: true
     }
   }));
 }
