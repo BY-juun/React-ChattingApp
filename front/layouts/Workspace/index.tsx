@@ -127,6 +127,7 @@ const Workspace: VFC = () => {
           setNewUrl('');
         })
         .catch((err) => {
+          console.log("dd");
           console.error(err);
           toast.error(err.response?.data, { position: 'bottom-center' });
         });

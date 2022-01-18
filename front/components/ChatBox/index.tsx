@@ -4,14 +4,15 @@ import { ChatArea, Form, MentionsTextarea, SendButton, Toolbox } from './styles'
 
 interface Props {
     chat : string;
+    onChangeChat : (e:React.FormEvent<HTMLElement>) => void;
+    onSubmitForm : (e:React.FormEvent<HTMLElement>) => void;
 }
 
-const ChatBox : VFC<Props> = ({chat}) => {
-  const onSubmitForm = useCallback(() => {}, []);
+const ChatBox : VFC<Props> = ({chat, onChangeChat, onSubmitForm}) => {
   return (
     <ChatArea>
       <Form onSubmit={onSubmitForm}>
-        <MentionsTextarea />
+        <MentionsTextarea value={chat} onChange={onChangeChat}></MentionsTextarea>
         <Toolbox>
           <SendButton
             className={
