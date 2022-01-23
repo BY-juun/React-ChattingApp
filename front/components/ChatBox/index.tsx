@@ -1,18 +1,46 @@
-import React, { useCallback, VFC } from 'react';
+import React, { useCallback, VFC, useRef, useEffect } from 'react';
 import { ChatArea, Form, MentionsTextarea, SendButton, Toolbox } from './styles';
-
+import {Mention} from 'react-mentions';
+import autosize from 'autosize';
+import { IUser } from '@typings/db';
 
 interface Props {
     chat : string;
-    onChangeChat : (e:React.FormEvent<HTMLElement>) => void;
+    onChangeChat: (e: any) => void;
     onSubmitForm : (e:React.FormEvent<HTMLElement>) => void;
+    placeholder?: string;
+    data?: IUser[];
 }
 
-const ChatBox : VFC<Props> = ({chat, onChangeChat, onSubmitForm}) => {
+const ChatBox : VFC<Props> = ({chat, onChangeChat, onSubmitForm,placeholder,data}) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (textareaRef.current) {
+      autosize(textareaRef.current);
+    }
+  }, []);
+  const onKeyDownChat = useCallback((e)=>{
+    if(e.key === "Enter"){
+      if(!e.shiftKey){
+        console.log("dd");
+        e.preventDefault();
+        onSubmitForm(e);        
+      }
+    }
+  },[onSubmitForm])
+  
   return (
     <ChatArea>
       <Form onSubmit={onSubmitForm}>
-        <MentionsTextarea value={chat} onChange={onChangeChat}></MentionsTextarea>
+        <MentionsTextarea id="editor-chat" value={chat} onChange={onChangeChat} 
+        onKeyDown={onKeyDownChat} placeholder={placeholder} inputRef={textareaRef}>
+           <Mention
+            appendSpaceOnAdd
+            trigger="@"
+            data={data?.map((v) => ({ id: v.id, display: v.nickname })) || []}
+            // renderSuggestion={renderUserSuggestion}
+          />
+        </MentionsTextarea>
         <Toolbox>
           <SendButton
             className={

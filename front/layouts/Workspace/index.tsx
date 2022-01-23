@@ -63,7 +63,7 @@ const Workspace: VFC = () => {
       .then(() => {
         mutate();
       });
-  }, []);
+  }, [mutate]);
 
   const onClickUserProfile = useCallback(() => {
     setShowUserMenu((prev) => !prev);

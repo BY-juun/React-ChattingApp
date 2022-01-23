@@ -9,7 +9,6 @@ const Channel : VFC = () => {
     const onSubmitForm = useCallback((e)=>{
         e.preventDefault();
         setChat("");
-        console.log("Channel DM Send");
     },[chat])
   return(
       <Container>

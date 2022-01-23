@@ -4,20 +4,35 @@ import { Container, Header } from './styles';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import { useParams } from 'react-router';
-import { IUser } from '@typings/db';
+import { IDM, IUser } from '@typings/db';
 import ChatBox from '@components/ChatBox';
 import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
+import axios from 'axios';
 
 const DirectMessage = () => {
     const { workspace, id } = useParams<{ workspace: string; id: string }>();
     const {data : myData} = useSWR('/api/users',fetcher);
     const {data : userData} = useSWR<IUser | false>(`/api/workspaces/${workspace}/members/${id}`,fetcher);
-    const [chat, onChangeChat] = useInput("");
+    const {data : chatData, mutate: mutateChat} = useSWR<IDM[]>(
+        `/api/workspace/${workspace}/dms/${id}/chats?perPage=20&page=1`,
+        fetcher,
+        );
+    const [chat, onChangeChat, setChat] = useInput("");
 
     const onSubmitForm = useCallback((e)=>{
         e.preventDefault();
-        console.log(chat);
+        console.log("ff");
+        if(chat?.trim()){
+            axios.post(`/api/workspace/${workspace}/dms/${id}/chats`,{
+                content : chat,
+            })
+            .then(()=>{
+                mutateChat();
+                setChat('');
+            })
+            .catch(console.error);
+        }
     },[chat]);
 
     if(!userData || !myData){
