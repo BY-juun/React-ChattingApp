@@ -55,13 +55,13 @@ const SignUp = () => {
           .finally(() => {});
       }
     },
-    [email, nickname, password, passwordCheck],
+    [email, mismatchError, nickname, password, passwordCheck],
   );
 
-  if(data === undefined) {
-    return <div>로딩중...</div>
+  if (data === undefined) {
+    return <div>로딩중...</div>;
   }
-  if(data) {
+  if (data) {
     return <Redirect to="/workspace/sleact/channel/일반" />;
   }
   return (

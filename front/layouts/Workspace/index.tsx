@@ -1,6 +1,6 @@
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import React, { useCallback, useState, VFC } from 'react';
+import React, { useCallback, useEffect, useState, VFC } from 'react';
 import { Switch, Route, Redirect, Link, useParams } from 'react-router-dom';
 import loadable from '@loadable/component';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
@@ -31,6 +31,7 @@ import useInput from '@hooks/useInput';
 import CreateChannelModal from '@components/CreateChannelModal';
 import ChannelList from '@components/ChannelList';
 import DMList from '@components/DMList';
+import useSocket from '@hooks/useSocket';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -39,15 +40,10 @@ const Workspace: VFC = () => {
   const { data: userData, error, mutate } = useSWR<IUser | false>('/api/users', fetcher);
 
   const { workspace } = useParams<{ workspace: string }>();
-  const { data: channleData } = useSWR<IChannel[]>(
-    userData ? `/api/workspaces/${workspace}/channels` : null,
-    fetcher,
-  );
+  const { data: channleData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
 
-  const {data : memberData} = useSWR<IUser[]>(
-    userData ? `/api/workspaces/${workspace}/members` : null,
-  );
-  
+  const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null);
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
@@ -55,6 +51,14 @@ const Workspace: VFC = () => {
   const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+
+  const [socket, disconnet] = useSocket(workspace);
+
+  useEffect(() => {
+    socket.on('message');
+    socket.emit();
+    disconnet();
+  }, []);
   const onLogOut = useCallback(() => {
     axios
       .post('/api/users/logout', null, {
@@ -127,7 +131,7 @@ const Workspace: VFC = () => {
           setNewUrl('');
         })
         .catch((err) => {
-          console.log("dd");
+          console.log('dd');
           console.error(err);
           toast.error(err.response?.data, { position: 'bottom-center' });
         });
