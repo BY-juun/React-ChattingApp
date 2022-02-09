@@ -30,11 +30,15 @@ const InviteWorkspaceModal: FC<Props> = ({ show, onCloseModal, setShowInviteWork
         return;
       }
       axios
-        .post(`/api/workspaces/${workspace}/members`, {
-          email: newMember,
-        },{
-            withCredentials : true,
-        })
+        .post(
+          `/api/workspaces/${workspace}/members`,
+          {
+            email: newMember,
+          },
+          {
+            withCredentials: true,
+          },
+        )
         .then(() => {
           revalidateMember();
           setShowInviteWorkspaceModal(false);

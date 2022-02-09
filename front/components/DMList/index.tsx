@@ -5,6 +5,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
+import useSocket from '@hooks/useSocket';
 
 const DMList = () => {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -17,6 +18,7 @@ const DMList = () => {
   );
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [onlineList, setOnlineList] = useState<number[]>([]);
+  const [socket] = useSocket(workspace);
 
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);
@@ -27,7 +29,19 @@ const DMList = () => {
     setOnlineList([]);
   }, [workspace]);
 
-  
+  useEffect(() => {
+    socket?.on('onlineList', (data: number[]) => {
+      setOnlineList(data);
+    });
+    // socket?.on('dm',onmessage);
+    // console.log('socket on me', socket?.hasListeners('dm'),socket);
+    return () => {
+      // socket?.off('dm',onMessage);
+      // console.log('socket off dm', socket?.hasListeners('dm'));
+      socket?.off('onlineList');
+    };
+  }, []);
+
   return (
     <>
       <h2>
@@ -41,7 +55,7 @@ const DMList = () => {
         <span>Direct Messages</span>
       </h2>
       <div>
-      {!channelCollapse &&
+        {!channelCollapse &&
           memberData?.map((member) => {
             const isOnline = onlineList.includes(member.id);
             return (
