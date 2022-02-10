@@ -1,40 +1,49 @@
 import React, { useCallback, VFC, useRef, useEffect } from 'react';
 import { ChatArea, Form, MentionsTextarea, SendButton, Toolbox } from './styles';
-import {Mention} from 'react-mentions';
+import { Mention } from 'react-mentions';
 import autosize from 'autosize';
 import { IUser } from '@typings/db';
 
 interface Props {
-    chat : string;
-    onChangeChat: (e: any) => void;
-    onSubmitForm : (e:React.FormEvent<HTMLElement>) => void;
-    placeholder?: string;
-    data?: IUser[];
+  chat: string;
+  onChangeChat: (e: any) => void;
+  onSubmitForm: (e: React.FormEvent<HTMLElement>) => void;
+  placeholder?: string;
+  data?: IUser[];
 }
 
-const ChatBox : VFC<Props> = ({chat, onChangeChat, onSubmitForm,placeholder,data}) => {
+const ChatBox: VFC<Props> = ({ chat, onChangeChat, onSubmitForm, placeholder, data }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     if (textareaRef.current) {
       autosize(textareaRef.current);
     }
   }, []);
-  const onKeyDownChat = useCallback((e)=>{
-    if(e.key === "Enter"){
-      if(!e.shiftKey){
-        console.log("dd");
-        e.preventDefault();
-        onSubmitForm(e);        
+  const onKeyDownChat = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        if (!e.shiftKey) {
+          console.log('dd');
+          e.preventDefault();
+          onSubmitForm(e);
+        }
       }
-    }
-  },[onSubmitForm])
-  
+    },
+    [onSubmitForm],
+  );
+
   return (
     <ChatArea>
       <Form onSubmit={onSubmitForm}>
-        <MentionsTextarea id="editor-chat" value={chat} onChange={onChangeChat} 
-        onKeyDown={onKeyDownChat} placeholder={placeholder} inputRef={textareaRef}>
-           <Mention
+        <MentionsTextarea
+          id="editor-chat"
+          value={chat}
+          onChange={onChangeChat}
+          onKeyDown={onKeyDownChat}
+          placeholder={placeholder}
+          inputRef={textareaRef}
+        >
+          <Mention
             appendSpaceOnAdd
             trigger="@"
             data={data?.map((v) => ({ id: v.id, display: v.nickname })) || []}
